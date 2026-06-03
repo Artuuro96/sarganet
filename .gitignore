@@ -1,0 +1,26 @@
+# Archivos generados y pesos del modelo
+/checkpoints/
+/outputs/
+
+# Datos (Evita subir miles de imágenes a Git)
+/dataset/images/
+# Si no quieres subir los CSVs, descomenta la siguiente línea:
+# /dataset/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+env/
+.env
+
+# Entornos e IDEs
+.vscode/
+.idea/
+.ipynb_checkpoints/
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
