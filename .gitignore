@@ -2,8 +2,8 @@
 /checkpoints/
 /outputs/
 
-# Datos (Evita subir miles de imágenes a Git)
-/dataset/images/
+# Datos (Las imágenes se subirán al repositorio por petición del usuario)
+# /dataset/images/
 # Si no quieres subir los CSVs, descomenta la siguiente línea:
 # /dataset/
 
