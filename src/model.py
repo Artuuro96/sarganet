@@ -4,7 +4,7 @@ EfficientNetV2-S model factory with freeze/unfreeze utilities for 2-phase fine-t
 
 import torch.nn as nn
 from torchvision import models
-from torchvision.models import EfficientNet_V2_S_Weights, ConvNeXt_Tiny_Weights, Swin_T_Weights
+from torchvision.models import EfficientNet_V2_S_Weights, ConvNeXt_Tiny_Weights, Swin_T_Weights, Swin_V2_T_Weights
 
 import os
 import sys
@@ -18,7 +18,24 @@ def create_model(num_classes=config.NUM_CLASSES, pretrained=True):
     """
     arch = getattr(config, "MODEL_ARCH", "efficientnet_v2_s")
     
-    if arch == "swin_t":
+    if arch == "swin_v2_t":
+        if pretrained:
+            weights = Swin_V2_T_Weights.IMAGENET1K_V1
+            model = models.swin_v2_t(weights=weights)
+            print("[Model] Loaded Swin-V2-T with IMAGENET1K_V1 pretrained weights")
+        else:
+            model = models.swin_v2_t(weights=None)
+            print("[Model] Loaded Swin-V2-T without pretrained weights")
+            
+        in_features = model.head.in_features
+        model.head = nn.Sequential(
+            nn.Dropout(p=0.3),
+            nn.Linear(in_features, 512),
+            nn.GELU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(512, num_classes),
+        )
+    elif arch == "swin_t":
         if pretrained:
             weights = Swin_T_Weights.IMAGENET1K_V1
             model = models.swin_t(weights=weights)

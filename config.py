@@ -6,7 +6,7 @@ All hyperparameters, paths, and class definitions are defined here.
 import os
 
 # ─── Model Architecture ───────────────────────────────────────────────────────
-MODEL_ARCH = "swin_t" # Opciones: "efficientnet_v2_s", "convnext_tiny", "swin_t"
+MODEL_ARCH = "swin_v2_t" # Opciones: "efficientnet_v2_s", "convnext_tiny", "swin_t", "swin_v2_t"
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
