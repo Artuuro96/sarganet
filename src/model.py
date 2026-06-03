@@ -84,7 +84,7 @@ def freeze_backbone(model):
     """
     frozen = 0
     for name, param in model.named_parameters():
-        if "classifier" not in name:
+        if "classifier" not in name and "head" not in name:
             param.requires_grad = False
             frozen += 1
         else:
@@ -117,7 +117,7 @@ def get_parameter_groups(model, backbone_lr, head_lr):
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
-        if "classifier" in name:
+        if "classifier" in name or "head" in name:
             head_params.append(param)
         else:
             backbone_params.append(param)
