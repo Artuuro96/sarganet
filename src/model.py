@@ -4,7 +4,7 @@ EfficientNetV2-S model factory with freeze/unfreeze utilities for 2-phase fine-t
 
 import torch.nn as nn
 from torchvision import models
-from torchvision.models import EfficientNet_V2_S_Weights, ConvNeXt_Tiny_Weights, Swin_T_Weights, Swin_V2_T_Weights
+from torchvision.models import EfficientNet_V2_S_Weights, ConvNeXt_Tiny_Weights, ConvNeXt_Small_Weights, Swin_T_Weights, Swin_V2_T_Weights
 
 import os
 import sys
@@ -60,6 +60,24 @@ def create_model(num_classes=config.NUM_CLASSES, pretrained=True):
         else:
             model = models.convnext_tiny(weights=None)
             print("[Model] Loaded ConvNeXt-Tiny without pretrained weights")
+            
+        # ConvNeXt classifier is: Sequential(LayerNorm, Flatten, Linear)
+        in_features = model.classifier[2].in_features
+        model.classifier[2] = nn.Sequential(
+            nn.Dropout(p=0.3),
+            nn.Linear(in_features, 512),
+            nn.GELU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(512, num_classes),
+        )
+    elif arch == "convnext_small":
+        if pretrained:
+            weights = ConvNeXt_Small_Weights.IMAGENET1K_V1
+            model = models.convnext_small(weights=weights)
+            print("[Model] Loaded ConvNeXt-Small with IMAGENET1K_V1 pretrained weights")
+        else:
+            model = models.convnext_small(weights=None)
+            print("[Model] Loaded ConvNeXt-Small without pretrained weights")
             
         # ConvNeXt classifier is: Sequential(LayerNorm, Flatten, Linear)
         in_features = model.classifier[2].in_features
