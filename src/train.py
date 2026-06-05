@@ -13,6 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.cuda.amp import GradScaler
+from torch.optim.swa_utils import AveragedModel, SWALR
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score, classification_report
 from tqdm import tqdm
@@ -237,7 +238,7 @@ def train_fold(fold, train_df, val_df, device):
 
     # ─── Loss function ───────────────────────────────────────────────────
     # Using class_weights to handle class imbalance
-    criterion = FocalLoss(weight=class_weights, gamma=2.0, label_smoothing=0.1)
+    criterion = FocalLoss(weight=class_weights, gamma=2.0, label_smoothing=config.LABEL_SMOOTHING)
     scaler = GradScaler()
     
     best_val_f1 = 0.0
@@ -328,6 +329,47 @@ def train_fold(fold, train_df, val_df, device):
             if patience_counter >= config.EARLY_STOPPING_PATIENCE:
                 print(f"  Early stopping triggered at epoch {global_epoch}")
                 break
+
+    # ───────────────────────────────────────────────────────────────────────
+    # Phase 3: Stochastic Weight Averaging (SWA)
+    # ───────────────────────────────────────────────────────────────────────
+    if getattr(config, 'SWA_ENABLED', False):
+        print(f"\n  PHASE 3: Stochastic Weight Averaging ({config.SWA_EPOCHS} epochs)")
+        
+        # Load best model from Phase 2 as starting point
+        best_ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
+        model.load_state_dict(best_ckpt["model_state_dict"])
+        
+        swa_model = AveragedModel(model)
+        swa_optimizer = torch.optim.AdamW(model.parameters(), lr=config.SWA_LR, weight_decay=config.WEIGHT_DECAY)
+        swa_scheduler = SWALR(swa_optimizer, swa_lr=config.SWA_LR)
+        
+        for epoch in range(1, config.SWA_EPOCHS + 1):
+            global_epoch += 1
+            t_loss, t_acc, t_f1 = train_one_epoch(
+                model, train_loader, criterion, swa_optimizer, scaler, None, device, global_epoch
+            )
+            swa_model.update_parameters(model)
+            swa_scheduler.step()
+            
+            print(f"  SWA Epoch {epoch} | Train Loss: {t_loss:.4f} Acc: {t_acc:.1f}% F1: {t_f1:.3f}")
+        
+        # Update batch normalization statistics for SWA model
+        torch.optim.swa_utils.update_bn(train_loader, swa_model, device=device)
+        
+        # Validate SWA model
+        v_loss, v_acc, v_f1, _, _ = validate(swa_model, val_loader, criterion, device, global_epoch)
+        print(f"  SWA Final | Val Loss: {v_loss:.4f} Acc: {v_acc:.1f}% F1: {v_f1:.3f}")
+        
+        # Save SWA model if it improved
+        if v_f1 > best_val_f1:
+            best_val_f1 = v_f1
+            # Save the inner model's state dict (not the SWA wrapper)
+            torch.save({"epoch": global_epoch, "model_state_dict": swa_model.module.state_dict(),
+                        "val_f1": v_f1, "val_acc": v_acc, "swa": True}, ckpt_path)
+            print(f"  ★ SWA model is BETTER! Saved (F1: {v_f1:.4f} vs previous {best_ckpt['val_f1']:.4f})")
+        else:
+            print(f"  SWA model did not improve (F1: {v_f1:.4f} vs best {best_val_f1:.4f}). Keeping original.")
 
     print(f"\n  Fold {fold} Complete! Best Val F1: {best_val_f1:.4f} at epoch {best_epoch}")
     return history

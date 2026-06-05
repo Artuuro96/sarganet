@@ -45,6 +45,12 @@ WEIGHT_DECAY = 0.05  # Increased for better regularization with AdamW + ConvNeXt
 EARLY_STOPPING_PATIENCE = 10
 GRADIENT_CLIP_MAX_NORM = 1.0
 NUM_FOLDS = 5
+LABEL_SMOOTHING = 0.15  # Subido de 0.1 para datasets pequeños
+
+# ─── Stochastic Weight Averaging (SWA) ───────────────────────────────────────
+SWA_ENABLED = True
+SWA_EPOCHS = 5       # Épocas extra de SWA después de Phase 2
+SWA_LR = 1e-5        # Learning rate bajo y constante para promediar pesos
 
 # ─── Reproducibility ─────────────────────────────────────────────────────────
 SEED = 42

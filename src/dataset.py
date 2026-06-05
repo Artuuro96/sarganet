@@ -78,6 +78,21 @@ def get_tta_transforms():
             transforms.ToTensor(),
             transforms.Normalize(mean=config.IMAGENET_MEAN, std=config.IMAGENET_STD),
         ]),
+        # Brightness boost (+15%)
+        transforms.Compose([
+            transforms.Resize(config.RESIZE_SIZE),
+            transforms.CenterCrop(config.IMG_SIZE),
+            transforms.ColorJitter(brightness=(1.15, 1.15)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=config.IMAGENET_MEAN, std=config.IMAGENET_STD),
+        ]),
+        # Slight zoom (crop más agresivo)
+        transforms.Compose([
+            transforms.Resize(int(config.RESIZE_SIZE * 1.1)),
+            transforms.CenterCrop(config.IMG_SIZE),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=config.IMAGENET_MEAN, std=config.IMAGENET_STD),
+        ]),
     ]
     return base
 
