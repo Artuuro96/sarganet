@@ -34,11 +34,11 @@ PIN_MEMORY = True
 
 # ─── Training: Phase 1 (Head Only) ───────────────────────────────────────────
 WARMUP_EPOCHS = 5
-WARMUP_LR = 5e-4     # Reducido: Los Transformers colapsan con LRs muy altos
+WARMUP_LR = 1e-3     # Regresado a la normalidad para ConvNeXt
 
 # ─── Training: Phase 2 (Full Fine-Tune) ──────────────────────────────────────
 FINETUNE_EPOCHS = 50
-FINETUNE_LR = 2e-5   # Reducido para estabilizar Swin-V2-T
+FINETUNE_LR = 5e-5   # Regresado al valor que te dio 0.69
 WEIGHT_DECAY = 0.05  # Increased for better regularization with AdamW + ConvNeXt
 
 # ─── Training: General ───────────────────────────────────────────────────────
