@@ -24,8 +24,8 @@ LABEL_TO_IDX = {name: idx for idx, name in enumerate(CLASS_NAMES)}
 IDX_TO_LABEL = {idx: name for idx, name in enumerate(CLASS_NAMES)}
 
 # ─── Image Settings ───────────────────────────────────────────────────────────
-IMG_SIZE = 384       # Best resolution according to user
-RESIZE_SIZE = 400    # Resize before center crop (val/test)
+IMG_SIZE = 512       # Resolución alta (requiere GPU con buena VRAM como AWS)
+RESIZE_SIZE = 544    # Resize before center crop (val/test)
 
 # ─── DataLoader Settings ──────────────────────────────────────────────────────
 BATCH_SIZE = 16      # Increased to 16 since Tiny uses less VRAM
